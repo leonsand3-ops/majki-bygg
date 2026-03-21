@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Majki Bygg AB - din palitliga byggpartner sedan 2022." />
+  <title>Majki Bygg AB - Professionella Byggare</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@300;400;600;700&display=swap');
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    :root{
+      --bg:#111111;--bg2:#1A1A1A;--text:#F0EEE8;--muted:#A8A59E;
+      --gold:#C9A227;--ghov:#E8B83A;--border:#2A2A2A;
+      --fh:'Oswald',sans-serif;--fb:'Source Sans 3',sans-serif;
+    }
+    body{background:var(--bg);color:var(--text);font-family:var(--fb);line-height:1.65;overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    img{display:block;max-width:100%}
+    .wrap{width:100%;max-width:1200px;margin:0 auto;padding:0 24px}
+    .gold{color:var(--gold)}
+    .slbl{font-family:var(--fh);font-size:.75rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+    .stit{font-family:var(--fh);font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;line-height:1.1;text-transform:uppercase;letter-spacing:.02em}
+    .gline{display:inline-block;width:44px;height:3px;background:var(--gold);margin-bottom:14px}
+    .btng{display:inline-block;padding:13px 32px;background:var(--gold);color:#111;font-family:var(--fh);font-size:.95rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;border:none;cursor:pointer;transition:background .2s,transform .15s}
+    .btng:hover{background:var(--ghov);transform:translateY(-1px)}
+    .btno{display:inline-block;padding:11px 28px;background:transparent;color:var(--gold);font-family:var(--fh);font-size:.9rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;border:2px solid var(--gold);cursor:pointer;transition:all .2s}
+    .btno:hover{background:var(--gold);color:#111;transform:translateY(-1px)}
+    /* NAVBAR */
+    #nav{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(17,17,17,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+    .ni{display:flex;align-items:center;justify-content:space-between;height:68px}
+    .nlo{display:flex;align-items:center}
+    .nlinks{display:flex;align-items:center;gap:36px;list-style:none}
+    .nlinks a{font-family:var(--fh);font-size:.88rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);transition:color .2s}
+    .nlinks a:hover{color:var(--gold)}
+    .ham{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:4px}
+    .ham span{display:block;width:26px;height:2px;background:var(--text);transition:all .3s}
+    .ham.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+    .ham.open span:nth-child(2){opacity:0}
+    .ham.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+    .mob{display:none;flex-direction:column;background:var(--bg2);border-top:1px solid var(--border);padding:8px 0 20px}
+    .mob.open{display:flex}
+    .mob a{font-family:var(--fh);font-size:1rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:13px 24px;border-bottom:1px solid var(--border);transition:color .2s}
+    .mob a:hover{color:var(--gold)}
+    .mob .btng{margin:16px 24px 0;text-align:center}
+    @media(max-width:820px){.nlinks,.ncta{display:none}.ham{display:flex}}
+    /* HERO */
+    #hero{position:relative;height:100vh;min-height:600px;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden}
+    .hbg{position:absolute;inset:0;background:url('images/house-exterior.jpg') center/cover no-repeat}
+    .hov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.28) 0%,rgba(0,0,0,.62) 50%,rgba(0,0,0,.88) 100%)}
+    .hcon{position:relative;z-index:1;max-width:860px;padding:0 24px}
+    .hbadge{display:inline-block;font-family:var(--fh);font-size:.7rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(201,162,39,.4);padding:6px 18px;margin-bottom:28px}
+    .ht1{font-family:var(--fh);font-size:clamp(3rem,9vw,6.5rem);font-weight:700;text-transform:uppercase;line-height:1;color:#fff}
+    .ht2{font-family:var(--fh);font-size:clamp(3rem,9vw,6.5rem);font-weight:700;text-transform:uppercase;line-height:1;color:var(--gold);margin-bottom:28px}
+    .hsub{font-size:clamp(1rem,2.5vw,1.18rem);color:rgba(240,238,232,.75);margin-bottom:44px;font-weight:300}
+    .hact{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+    .shi{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);z-index:1;display:flex;flex-direction:column;align-items:center;gap:8px;opacity:.45}
+    .shi span{font-family:var(--fh);font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)}
+    .sarr{width:18px;height:18px;border-right:2px solid var(--gold);border-bottom:2px solid var(--gold);transform:rotate(45deg);animation:bounce 2s infinite}
+    @keyframes bounce{0%,100%{transform:rotate(45deg) translateY(0)}50%{transform:rotate(45deg) translateY(6px)}}
+    /* OM OSS */
+    #omoss{padding:100px 0}
+    .omg{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+    .omt .stit{margin-bottom:28px}
+    .omt p{color:var(--muted);font-size:1.03rem;margin-bottom:20px;line-height:1.78}
+    .omst{display:flex;gap:40px;margin-top:36px;padding-top:32px;border-top:1px solid var(--border)}
+    .snum{font-family:var(--fh);font-size:2.5rem;font-weight:700;color:var(--gold);line-height:1}
+    .slb{font-size:.75rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-top:4px}
+    .omi{position:relative}
+    .omi::after{content:'';position:absolute;top:-14px;right:-14px;width:55%;height:55%;border:3px solid var(--gold);z-index:0;pointer-events:none}
+    .omi img{width:100%;height:520px;object-fit:cover;position:relative;z-index:1}
+    @media(max-width:900px){.omg{grid-template-columns:1fr;gap:48px}.omi::after{display:none}.omi img{height:300px}}
+  </style>
+</head>
+<body>
+  <style>
+    /* TJANSTER */
+    #tjanster{padding:100px 0;background:var(--bg2)}
+    .ch{text-align:center;margin-bottom:56px}
+    .sgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
+    .sc{background:var(--bg);border:1px solid var(--border);padding:28px 18px;transition:border-color .25s,transform .2s}
+    .sc:hover{border-color:var(--gold);transform:translateY(-4px)}
+    .sico{font-size:2rem;margin-bottom:16px;display:block}
+    .sname{font-family:var(--fh);font-size:.98rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--gold);margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+    .slist{list-style:none;display:flex;flex-direction:column;gap:7px}
+    .slist li{font-size:.86rem;color:var(--muted);padding-left:14px;position:relative;line-height:1.4}
+    .slist li::before{content:'\2014';position:absolute;left:0;color:var(--gold);font-size:.68rem;top:2px}
+    @media(max-width:1100px){.sgrid{grid-template-columns:repeat(3,1fr)}}
+    @media(max-width:700px){.sgrid{grid-template-columns:1fr}}
+    /* GALLERI */
+    #projekt{padding:100px 0}
+    .ggrid{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:280px 280px;gap:10px}
+    .gi{position:relative;overflow:hidden;cursor:pointer}
+    .gi.tall{grid-row:span 2}
+    .gi img{width:100%;height:100%;object-fit:cover;transition:transform .5s ease}
+    .gi:hover img{transform:scale(1.08)}
+    .gov{position:absolute;inset:0;background:linear-gradient(180deg,transparent 30%,rgba(0,0,0,.78) 100%);opacity:0;transition:opacity .35s;display:flex;align-items:flex-end;padding:20px}
+    .gi:hover .gov{opacity:1}
+    .gtit{font-family:var(--fh);font-size:1rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--gold)}
+    @media(max-width:768px){.ggrid{grid-template-columns:1fr 1fr;grid-template-rows:auto}.gi.tall{grid-row:span 1}.gi{height:200px}}
+    @media(max-width:500px){.ggrid{grid-template-columns:1fr}.gi{height:220px}}
+    /* VARFOR */
+    #varfor{padding:100px 0;background:var(--bg2)}
+    .ugrid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+    .uc{background:var(--bg);border:1px solid var(--border);padding:40px 24px;text-align:center;transition:border-color .25s,transform .2s}
+    .uc:hover{border-color:var(--gold);transform:translateY(-4px)}
+    .uico{font-size:2.4rem;margin-bottom:18px}
+    .unum{font-family:var(--fh);font-size:3rem;font-weight:700;color:var(--gold);line-height:1;margin-bottom:8px}
+    .utit{font-family:var(--fh);font-size:.92rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+    .udesc{font-size:.86rem;color:var(--muted);line-height:1.6}
+    @media(max-width:900px){.ugrid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:500px){.ugrid{grid-template-columns:1fr}}
+    /* KONTAKT */
+    #kontakt{padding:100px 0}
+    .kg{display:grid;grid-template-columns:1.3fr 1fr;gap:80px;align-items:start;margin-top:56px}
+    .cform{display:flex;flex-direction:column;gap:20px}
+    .frow{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+    .fg{display:flex;flex-direction:column;gap:8px}
+    .fg label{font-family:var(--fh);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+    .fg input,.fg textarea{background:var(--bg2);border:1px solid var(--border);color:var(--text);font-family:var(--fb);font-size:.95rem;padding:14px 16px;outline:none;transition:border-color .2s;resize:none;width:100%}
+    .fg input:focus,.fg textarea:focus{border-color:var(--gold)}
+    .fg input::placeholder,.fg textarea::placeholder{color:#555550}
+    .fg textarea{height:140px}
+    .btng.full{width:100%;text-align:center;padding:16px;font-size:1rem}
+    .citit{font-family:var(--fh);font-size:1.35rem;font-weight:700;text-transform:uppercase;margin-bottom:32px}
+    .cii{display:flex;flex-direction:column;gap:26px}
+    .ciitem{display:flex;gap:16px;align-items:flex-start}
+    .ciico{width:44px;height:44px;background:rgba(201,162,39,.1);border:1px solid rgba(201,162,39,.3);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+    .cilbl{font-family:var(--fh);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold)}
+    .cival{font-size:.9rem;color:var(--muted);line-height:1.5;margin-top:3px}
+    .kdiv{margin:32px 0;height:1px;background:var(--border)}
+    .hlbl{font-family:var(--fh);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+    .hrow{display:flex;justify-content:space-between;font-size:.86rem;color:var(--muted);padding:7px 0;border-bottom:1px solid rgba(42,42,42,.5)}
+    .hrow:last-child{border-bottom:none}
+    .hopen{color:var(--gold);font-weight:600}
+    @media(max-width:900px){.kg{grid-template-columns:1fr;gap:48px}.frow{grid-template-columns:1fr}}
+    /* FOOTER */
+    #footer{background:#0A0A0A;border-top:1px solid var(--border);padding:64px 0 32px}
+    .fgrid{display:grid;grid-template-columns:1.5fr 1fr 1fr;gap:60px;margin-bottom:48px}
+    .fbrand p{font-size:.87rem;color:var(--muted);line-height:1.75;margin-top:20px;max-width:300px}
+    .fcol h4{font-family:var(--fh);font-size:.73rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:18px}
+    .flinks{list-style:none;display:flex;flex-direction:column;gap:10px}
+    .flinks a{font-size:.86rem;color:var(--muted);transition:color .2s}
+    .flinks a:hover{color:var(--text)}
+    .fbot{border-top:1px solid var(--border);padding-top:28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+    .fcopy{font-size:.79rem;color:var(--muted)}
+    .fleg{display:flex;gap:24px}
+    .fleg a{font-size:.79rem;color:var(--muted);transition:color .2s}
+    .fleg a:hover{color:var(--gold)}
+    @media(max-width:768px){.fgrid{grid-template-columns:1fr;gap:36px}.fbot{flex-direction:column;text-align:center}}
+    /* TOAST */
+    .toast{position:fixed;bottom:32px;right:32px;background:var(--gold);color:#111;font-family:var(--fh);font-size:.9rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:14px 28px;z-index:9999;opacity:0;transform:translateY(20px);transition:all .4s;pointer-events:none}
+    .toast.show{opacity:1;transform:translateY(0)}
+  </style>
+<!-- NAVBAR -->
+<nav id="nav">
+  <div class="wrap">
+    <div class="ni">
+      <a href="#" class="nlo" aria-label="Majki Bygg AB">
+        <svg style="height:42px;width:auto" viewBox="0 0 278 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="20,22 7,32 33,32" fill="#C9A227"/>
+          <rect x="25" y="13" width="4" height="11" fill="#C9A227"/>
+          <rect x="9" y="32" width="22" height="13" fill="#F0EEE8"/>
+          <rect x="17" y="37" width="7" height="8" fill="#C9A227"/>
+          <rect x="11" y="34" width="5" height="5" fill="rgba(201,162,39,0.5)"/>
+          <text x="44" y="37" font-family="Oswald,sans-serif" font-weight="700" font-size="27" letter-spacing="1.5">
+            <tspan fill="#F0EEE8">MAJKI </tspan><tspan fill="#C9A227">BYGG</tspan><tspan fill="#F0EEE8"> AB</tspan>
+          </text>
+        </svg>
+      </a>
+      <ul class="nlinks">
+        <li><a href="#omoss">Om oss</a></li>
+        <li><a href="#tjanster">Tj&#228;nster</a></li>
+        <li><a href="#projekt">Projekt</a></li>
+        <li><a href="#kontakt">Kontakt</a></li>
+      </ul>
+      <a href="#kontakt" class="btng ncta">Beg&#228;r offert</a>
+      <button class="ham" id="ham" aria-label="Meny"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+  <div class="mob" id="mob">
+    <a href="#omoss">Om oss</a>
+    <a href="#tjanster">Tj&#228;nster</a>
+    <a href="#projekt">Projekt</a>
+    <a href="#kontakt">Kontakt</a>
+    <a href="#kontakt" class="btng">Beg&#228;r offert</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hbg"></div>
+  <div class="hov"></div>
+  <div class="hcon">
+    <div class="hbadge">Majki Bygg AB &middot; Grundat 2022</div>
+    <h1 class="ht1">VI BYGGER</h1>
+    <h1 class="ht2">DINA DR&#214;MMAR</h1>
+    <p class="hsub">Majki Bygg AB &mdash; din p&#229;litliga byggpartner sedan 2022.<br>Fr&#229;n husbyggnation till renovering, vi levererar med precision och stolthet.</p>
+    <div class="hact">
+      <a href="#kontakt" class="btng">Beg&#228;r offert</a>
+      <a href="#tjanster" class="btno">V&#229;ra tj&#228;nster</a>
+    </div>
+  </div>
+  <div class="shi"><span>Scrolla</span><div class="sarr"></div></div>
+</section>
+
+<!-- OM OSS -->
+<section id="omoss">
+  <div class="wrap">
+    <div class="omg">
+      <div class="omt">
+        <div class="gline"></div>
+        <p class="slbl">Om oss</p>
+        <h2 class="stit">ERFARNA HANTVERKARE,<br><span class="gold">EXCEPTIONELLT RESULTAT</span></h2>
+        <p>Majki Bygg AB grundades 2022 med en enkel vision: att leverera byggkvalitet i toppklass med &#228;rlig kommunikation och noggrannhet i varje detalj. Vi &#228;r ett dedikerat team av erfarna hantverkare som brinner f&#246;r hantverket och kundn&#246;jdhet.</p>
+        <p>Fr&#229;n grunden av ditt dr&#246;mhus till den sista detaljpanelen i badrummet &mdash; vi tar ansvar f&#246;r hela processen. Med rikst&#228;ckande kapacitet och lokal f&#246;rankring &#228;r Majki Bygg AB valet f&#246;r kunder som v&#228;grar kompromissa med kvalitet.</p>
+        <a href="#kontakt" class="btng">Kontakta oss</a>
+        <div class="omst">
+          <div><div class="snum">20+</div><div class="slb">Genomf&#246;rda projekt</div></div>
+          <div><div class="snum">3</div><div class="slb">&#197;r i branschen</div></div>
+          <div><div class="snum">100%</div><div class="slb">N&#246;jda kunder</div></div>
+        </div>
+      </div>
+      <div class="omi">
+        <img src="images/scaffolding-house.jpg" alt="Hus under byggnation" loading="lazy"/>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TJANSTER -->
+<section id="tjanster">
+  <div class="wrap">
+    <div class="ch">
+      <div class="gline"></div>
+      <p class="slbl">V&#229;ra tj&#228;nster</p>
+      <h2 class="stit">VAD VI G&#214;R</h2>
+    </div>
+    <div class="sgrid">
+      <div class="sc">
+        <span class="sico">&#127968;</span>
+        <div class="sname">Husbyggnation</div>
+        <ul class="slist">
+          <li>Husbyggnation</li><li>Lyxbost&#228;der</li><li>Lantliga fastigheter</li>
+          <li>F&#246;rtillverkade bost&#228;der</li><li>Minihus</li><li>Tillbyggnad</li>
+        </ul>
+      </div>
+      <div class="sc">
+        <span class="sico">&#128296;</span>
+        <div class="sname">Renovering &amp; Reparation</div>
+        <ul class="slist">
+          <li>Husrenovering</li><li>Reparationer</li><li>Underh&#229;ll</li>
+          <li>Golv</li><li>Kakel</li><li>Gips &amp; rivning</li>
+        </ul>
+      </div>
+      <div class="sc">
+        <span class="sico">&#127959;</span>
+        <div class="sname">Tak &amp; Fasad</div>
+        <ul class="slist">
+          <li>Takbygge</li><li>Takl&#228;ggning</li><li>Fasadarbeten</li><li>D&#228;ckkonstruktion</li>
+        </ul>
+      </div>
+      <div class="sc">
+        <span class="sico">&#127912;</span>
+        <div class="sname">Inredning &amp; Exteri&#246;r</div>
+        <ul class="slist">
+          <li>Inredning</li><li>M&#229;leri (in/ut)</li><li>Garagedesign</li>
+          <li>Uteplats</li><li>Grundgjutning</li>
+        </ul>
+      </div>
+      <div class="sc">
+        <span class="sico">&#128203;</span>
+        <div class="sname">Projektledning</div>
+        <ul class="slist">
+          <li>Komplett projektledning</li><li>Tidsplanering</li>
+          <li>Koordinering</li><li>Kvalitetss&#228;kring</li><li>Slutbesiktning</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERI -->
+<section id="projekt">
+  <div class="wrap">
+    <div class="ch">
+      <div class="gline"></div>
+      <p class="slbl">V&#229;ra projekt</p>
+      <h2 class="stit">SENASTE ARBETEN</h2>
+    </div>
+    <div class="ggrid">
+      <div class="gi tall">
+        <img src="images/roofing.jpg" alt="Taklaggning" loading="lazy"/>
+        <div class="gov"><span class="gtit">Takl&#228;ggning</span></div>
+      </div>
+      <div class="gi">
+        <img src="images/commercial-interior.jpg" alt="Kommersiell byggnad" loading="lazy"/>
+        <div class="gov"><span class="gtit">Kommersiell byggnad</span></div>
+      </div>
+      <div class="gi">
+        <img src="images/bathroom-modern.jpg" alt="Badrumrenovering" loading="lazy"/>
+        <div class="gov"><span class="gtit">Badrumrenovering</span></div>
+      </div>
+      <div class="gi">
+        <img src="images/bathroom-grey.jpg" alt="Lyxbadrum" loading="lazy"/>
+        <div class="gov"><span class="gtit">Lyxbadrum</span></div>
+      </div>
+      <div class="gi">
+        <img src="images/foundation.jpg" alt="Grundgjutning" loading="lazy"/>
+        <div class="gov"><span class="gtit">Grundgjutning</span></div>
+      </div>
+      <div class="gi">
+        <img src="images/bathroom-white.jpg" alt="Minimalistiskt badrum" loading="lazy"/>
+        <div class="gov"><span class="gtit">Minimalistiskt badrum</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VARFOR MAJKI -->
+<section id="varfor">
+  <div class="wrap">
+    <div class="ch">
+      <div class="gline"></div>
+      <p class="slbl">V&#229;ra f&#246;rdelar</p>
+      <h2 class="stit">VARF&#214;R MAJKI?</h2>
+    </div>
+    <div class="ugrid">
+      <div class="uc">
+        <div class="uico">&#127942;</div>
+        <div class="unum">20+</div>
+        <div class="utit">Genomf&#246;rda Projekt</div>
+        <div class="udesc">Beprovad erfarenhet av allt fr&#229;n minihus till kommersiella storprojekt.</div>
+      </div>
+      <div class="uc">
+        <div class="uico">&#9989;</div>
+        <div class="unum">100%</div>
+        <div class="utit">Kvalitetsgaranti</div>
+        <div class="udesc">Vi st&#229;r bakom varje projekt och garanterar h&#246;gsta m&#246;jliga kvalitet i slutresultatet.</div>
+      </div>
+      <div class="uc">
+        <div class="uico">&#128736;</div>
+        <div class="unum">3+</div>
+        <div class="utit">Erfaret Team</div>
+        <div class="udesc">Erfarna hantverkare med spetskompetens inom husbyggnation, renovering och projektledning.</div>
+      </div>
+      <div class="uc">
+        <div class="uico">&#127758;</div>
+        <div class="unum">SE</div>
+        <div class="utit">Rikst&#228;ckande</div>
+        <div class="udesc">Vi tar uppdrag i hela Sverige &mdash; fr&#229;n norr till s&#246;der, stad och landsbygd.</div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- KONTAKT -->
+<section id="kontakt">
+  <div class="wrap">
+    <div class="gline"></div>
+    <p class="slbl">Kontakta oss</p>
+    <h2 class="stit">BEG&#196;R OFFERT</h2>
+    <div class="kg">
+      <form class="cform" onsubmit="handleSubmit(event)">
+        <div class="frow">
+          <div class="fg">
+            <label for="namn">Namn</label>
+            <input type="text" id="namn" placeholder="Ditt namn" required/>
+          </div>
+          <div class="fg">
+            <label for="tel">Telefon</label>
+            <input type="tel" id="tel" placeholder="070-000 00 00" required/>
+          </div>
+        </div>
+        <div class="fg">
+          <label for="epost">E-post</label>
+          <input type="email" id="epost" placeholder="din@epost.se" required/>
+        </div>
+        <div class="fg">
+          <label for="meddelande">Meddelande</label>
+          <textarea id="meddelande" placeholder="Beskriv ditt projekt, plats, tidsram och budget..." required></textarea>
+        </div>
+        <button type="submit" class="btng full">Skicka meddelande &#8594;</button>
+      </form>
+
+      <div class="contact-info">
+        <h3 class="citit">KONTAKTINFORMATION</h3>
+        <div class="cii">
+          <div class="ciitem">
+            <div class="ciico">&#128205;</div>
+            <div>
+              <div class="cilbl">Adress</div>
+              <div class="cival">Majki Bygg AB<br>Sverige</div>
+            </div>
+          </div>
+          <div class="ciitem">
+            <div class="ciico">&#128222;</div>
+            <div>
+              <div class="cilbl">Telefon</div>
+              <div class="cival">+46 70 000 00 00</div>
+            </div>
+          </div>
+          <div class="ciitem">
+            <div class="ciico">&#9993;</div>
+            <div>
+              <div class="cilbl">E-post</div>
+              <div class="cival">info@majkibygg.se</div>
+            </div>
+          </div>
+        </div>
+        <div class="kdiv"></div>
+        <div class="hlbl">&#214;ppettider</div>
+        <div>
+          <div class="hrow"><span>M&#229;ndag &ndash; Fredag</span><span class="hopen">07:00 &ndash; 17:00</span></div>
+          <div class="hrow"><span>L&#246;rdag</span><span class="hopen">08:00 &ndash; 14:00</span></div>
+          <div class="hrow"><span>S&#246;ndag</span><span style="color:var(--muted)">St&#228;ngt</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div class="wrap">
+    <div class="fgrid">
+      <div class="fbrand">
+        <svg style="height:40px;width:auto" viewBox="0 0 278 46" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="20,22 7,32 33,32" fill="#C9A227"/>
+          <rect x="25" y="13" width="4" height="11" fill="#C9A227"/>
+          <rect x="9" y="32" width="22" height="13" fill="#F0EEE8"/>
+          <rect x="17" y="37" width="7" height="8" fill="#C9A227"/>
+          <rect x="11" y="34" width="5" height="5" fill="rgba(201,162,39,0.5)"/>
+          <text x="44" y="37" font-family="Oswald,sans-serif" font-weight="700" font-size="27" letter-spacing="1.5">
+            <tspan fill="#F0EEE8">MAJKI </tspan><tspan fill="#C9A227">BYGG</tspan><tspan fill="#F0EEE8"> AB</tspan>
+          </text>
+        </svg>
+        <p>Premium byggf&#246;retag grundat 2022. Vi levererar exceptionell byggkvalitet med stolthet och precision i varje uppdrag &mdash; fr&#229;n Stockholm till Kiruna.</p>
+      </div>
+      <div class="fcol">
+        <h4>Snabbl&#228;nkar</h4>
+        <ul class="flinks">
+          <li><a href="#omoss">Om oss</a></li>
+          <li><a href="#tjanster">Tj&#228;nster</a></li>
+          <li><a href="#projekt">Projekt</a></li>
+          <li><a href="#varfor">Varf&#246;r Majki?</a></li>
+          <li><a href="#kontakt">Kontakt</a></li>
+        </ul>
+      </div>
+      <div class="fcol">
+        <h4>Tj&#228;nster</h4>
+        <ul class="flinks">
+          <li><a href="#tjanster">Husbyggnation</a></li>
+          <li><a href="#tjanster">Renovering</a></li>
+          <li><a href="#tjanster">Tak &amp; Fasad</a></li>
+          <li><a href="#tjanster">Inredning</a></li>
+          <li><a href="#tjanster">Projektledning</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fbot">
+      <div class="fcopy">&copy; 2024 Majki Bygg AB. Alla r&#228;ttigheter f&#246;rbeh&#229;llna.</div>
+      <div class="fleg">
+        <a href="#">Integritetspolicy</a>
+        <a href="#">Villkor</a>
+        <a href="#kontakt">Kontakt</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div class="toast" id="toast">Meddelande skickat!</div>
+
+<script>
+  // Hamburger
+  const ham = document.getElementById('ham');
+  const mob = document.getElementById('mob');
+  ham.addEventListener('click', () => {
+    ham.classList.toggle('open');
+    mob.classList.toggle('open');
+  });
+  mob.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', () => {
+      ham.classList.remove('open');
+      mob.classList.remove('open');
+    });
+  });
+
+  // Form submit
+  function handleSubmit(e) {
+    e.preventDefault();
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+    e.target.reset();
+  }
+
+  // Navbar scroll opacity
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 80) {
+      nav.style.background = 'rgba(17,17,17,1)';
+    } else {
+      nav.style.background = 'rgba(17,17,17,.96)';
+    }
+  });
+</script>
+</body>
+</html>

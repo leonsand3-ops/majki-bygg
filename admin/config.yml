@@ -1,0 +1,34 @@
+backend:
+  name: github
+  repo: leonsand3-ops/majki-bygg
+  branch: main
+  base_url: https://leon-cms-oauth.leonsand3.workers.dev
+
+media_folder: "images"
+public_folder: "/images"
+
+collections:
+  - name: "content"
+    label: "Sidinnehåll"
+    files:
+      - label: "Hemsidan"
+        name: "content"
+        file: "content.json"
+        fields:
+          - { label: "Företagsnamn", name: "company", widget: "string" }
+          - { label: "Slogan", name: "slogan", widget: "string" }
+          - { label: "Telefon", name: "phone", widget: "string" }
+          - { label: "E-post", name: "email", widget: "string" }
+          - { label: "Adress", name: "address", widget: "string" }
+          - label: "Om oss"
+            name: "about"
+            widget: "object"
+            fields:
+              - { label: "Titel", name: "title", widget: "string" }
+              - { label: "Text", name: "text", widget: "text" }
+          - label: "Kontakt"
+            name: "contact"
+            widget: "object"
+            fields:
+              - { label: "Titel", name: "title", widget: "string" }
+              - { label: "Beskrivning", name: "description", widget: "text" }
