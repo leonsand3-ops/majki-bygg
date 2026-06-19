@@ -84,7 +84,7 @@ class Vehicle{
   }
   reset(x,y){
     this.x=x; this.y=y; this.vx=0; this.vy=0;
-    this.a=this.pid===0?0:Math.PI; this.av=0;
+    this.a=0; this.av=0;   // both cars upright (side view); colour tells them apart
     this.alive=true; this.deathT=0; this.drive=0;
     if(this.wheels) this.wheels.forEach(w=>w.spin=0);
   }
@@ -116,7 +116,7 @@ function buildArena(idx){
     A.segs.push(seg(left,floorY-150,left,150));     // left wall
     A.segs.push(seg(right,floorY-150,right,150));    // right wall
     A.segs.push(seg(left,150,right,150));            // ceiling
-    A.spawns=[{x:430,y:200},{x:850,y:200}];
+    A.spawns=[{x:430,y:490},{x:850,y:490}];
   }else if(idx===1){ // Central Sawblade
     A.name='Central Sawblade'; A.bg='#120a0d'; A.accent='#3a2a30';
     A.segs.push(seg(left,floorY,right,floorY));
@@ -126,7 +126,7 @@ function buildArena(idx){
     A.hazards.push({type:'saw',x:640,y:floorY-46,r:54,ang:0,spin:5});
     A.hazards.push({type:'saw',x:340,y:floorY-40,r:38,ang:0,spin:-7});
     A.hazards.push({type:'saw',x:940,y:floorY-40,r:38,ang:0,spin:7});
-    A.spawns=[{x:430,y:200},{x:850,y:200}];
+    A.spawns=[{x:430,y:500},{x:850,y:500}];
   }else{ // Rising Lava
     A.name='Rising Lava'; A.bg='#150704'; A.accent='#3a1a10';
     // three platforms over a pit
@@ -137,7 +137,7 @@ function buildArena(idx){
     A.segs.push(seg(520,330,760,330));   // center platform
     A.segs.push(seg(860,420,1120,420));  // right platform
     A.lava={y:680, base:680, top:360, t:0, dir:1};
-    A.spawns=[{x:290,y:360},{x:990,y:360}];
+    A.spawns=[{x:290,y:385},{x:990,y:385}];
   }
   return A;
 }
@@ -150,10 +150,10 @@ function physicsStep(v, A, dt, playing){
   if(!v.alive) return;
   // gravity
   v.vy += GRAV*dt;
-  // drive: torque + forward force when a wheel is grounded
-  const torque = v.drive * 62;
-  v.av += torque*dt;
-  v.wheels.forEach(w=>w.spin += v.drive*16*dt);
+  // gentle body torque for air control only — real propulsion happens at the
+  // grounded wheels (see the contact loop below)
+  v.av += v.drive * 7 * dt;
+  v.wheels.forEach(w=>w.spin += v.drive*22*dt);
   // integrate
   v.x += v.vx*dt; v.y += v.vy*dt; v.a += v.av*dt;
   // damping
@@ -193,11 +193,20 @@ function physicsStep(v, A, dt, playing){
         let vt=pvx2*tx+pvy2*ty;
         const rt=rx*ty-ry*tx;
         const denomT=v.invMass+v.invI*rt*rt;
-        let jt=-vt/denomT * 0.65; // grip
+        // A powered wheel rolls freely along the drive direction (low friction so
+        // the thrust isn't cancelled); everything else grips firmly so it can't slide.
+        const driving = ct.drive && playing && v.drive!==0;
+        const grip = driving ? 0.10 : 0.7;
+        let jt=-vt/denomT * grip;
         v.applyImpulse(jt*tx,jt*ty,rx,ry);
-        if(ct.drive && playing){
-          const push = v.drive*240;
-          v.applyImpulse(tx*push*dt*60*v.mass*0.0,ty*0,rx,ry); // (drive handled by torque->ground grip)
+        // drive: push the vehicle forward along the ground at grounded wheels
+        if(driving){
+          const MAX_DRIVE_SPEED = 520;               // px/s cap on tangential speed
+          if(v.drive*vt < MAX_DRIVE_SPEED){
+            const ACCEL = 4200;                       // px/s^2 of drive thrust
+            const j = v.drive * ACCEL * v.mass * dt;  // impulse this substep
+            v.applyImpulse(tx*j, ty*j, rx, ry);
+          }
         }
       }
     }
