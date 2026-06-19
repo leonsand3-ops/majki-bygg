@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arena Crash</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:#0a0a0f;overflow:hidden;font-family:'Trebuchet MS',Arial,sans-serif;color:#f0eee8}
+  #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  canvas{background:#0a0a0f;image-rendering:pixelated;max-width:100%;max-height:100%}
+  #hint{position:fixed;bottom:8px;left:0;right:0;text-align:center;font-size:13px;color:#555;pointer-events:none}
+</style>
+</head>
+<body>
+<div id="wrap"><canvas id="c" width="1280" height="720"></canvas></div>
+<div id="hint">P1: A / D &nbsp;·&nbsp; P2: ← / → &nbsp;·&nbsp; F: Fullscreen &nbsp;·&nbsp; Enter: Select</div>
+<script>
+"use strict";
+/* ===========================================================
+   ARENA CRASH — browser edition
+   Physics-based vehicle combat. Hit the enemy's head to score.
+   First to 5 wins. Pure canvas + JS, no dependencies.
+   =========================================================== */
+
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const W = cv.width, H = cv.height;
+
+// ---------- input ----------
+const keys = {};
+addEventListener('keydown', e=>{
+  keys[e.code]=true;
+  if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space'].includes(e.code)) e.preventDefault();
+  if(e.code==='KeyF') toggleFull();
+  if(e.code==='Enter') onEnter();
+  if(e.code==='Escape') onEscape();
+});
+addEventListener('keyup', e=>{ keys[e.code]=false; });
+function toggleFull(){ if(!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); }
+
+// ---------- math ----------
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const lerp=(a,b,t)=>a+(b-a)*t;
+function rot(x,y,a){const c=Math.cos(a),s=Math.sin(a);return [x*c-y*s, x*s+y*c];}
+
+// ===========================================================
+//  RIGID BODY VEHICLE
+//  Modeled as one rigid body with 2 wheel contact points + a
+//  chassis. Wheels deliver drive torque. Head is a kill point.
+// ===========================================================
+class Vehicle{
+  constructor(pid, x, y){
+    this.pid=pid;
+    this.spawn={x,y};
+    this.reset(x,y);
+    this.mass=8; this.invMass=1/this.mass;
+    this.inertia=this.mass*900; this.invI=1/this.inertia;
+    // local geometry
+    this.wheels=[{lx:-26,ly:14,r:15,spin:0},{lx:26,ly:14,r:15,spin:0}];
+    this.chassis={hw:34,hh:14,cy:-2};   // half-extents of body box
+    this.head={lx:6,ly:-32,r:13};
+    this.color = pid===0 ? '#3aa0ff' : '#ff5236';
+    this.dark  = pid===0 ? '#1d5fa8' : '#a62810';
+  }
+  reset(x,y){
+    this.x=x; this.y=y; this.vx=0; this.vy=0;
+    this.a=this.pid===0?0:Math.PI; this.av=0;
+    this.alive=true; this.deathT=0; this.drive=0;
+    if(this.wheels) this.wheels.forEach(w=>w.spin=0);
+  }
+  // world position of a local point
+  wp(lx,ly){ const [rx,ry]=rot(lx,ly,this.a); return [this.x+rx, this.y+ry]; }
+  // velocity of a world contact point (r = point - center)
+  pointVel(rx,ry){ return [this.vx - this.av*ry, this.vy + this.av*rx]; }
+  applyImpulse(jx,jy,rx,ry){
+    this.vx += jx*this.invMass; this.vy += jy*this.invMass;
+    this.av += (rx*jy - ry*jx)*this.invI;
+  }
+  headWorld(){ return this.wp(this.head.lx,this.head.ly); }
+}
+
+// ===========================================================
+//  ARENAS — each defines ground segments, walls, hazards
+// ===========================================================
+function seg(ax,ay,bx,by){return {ax,ay,bx,by};}
+
+function buildArena(idx){
+  const A={segs:[], hazards:[], name:'', bg:'#0a0a0f', accent:'#222', spawns:[{x:430,y:300},{x:850,y:300}], lava:null};
+  const floorY=560, left=120, right=1160;
+  if(idx===0){ // Classic Bowl
+    A.name='Classic Bowl'; A.bg='#0b0d12'; A.accent='#2a2f38';
+    // bowl curve
+    let pts=[];
+    for(let i=0;i<=20;i++){const t=i/20; const x=left+(right-left)*t; const dx=(t-0.5)*2; const y=floorY - 150*(dx*dx); pts.push([x,y]);}
+    for(let i=0;i<pts.length-1;i++) A.segs.push(seg(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1]));
+    A.segs.push(seg(left,floorY-150,left,150));     // left wall
+    A.segs.push(seg(right,floorY-150,right,150));    // right wall
+    A.segs.push(seg(left,150,right,150));            // ceiling
+    A.spawns=[{x:430,y:200},{x:850,y:200}];
+  }else if(idx===1){ // Central Sawblade
+    A.name='Central Sawblade'; A.bg='#120a0d'; A.accent='#3a2a30';
+    A.segs.push(seg(left,floorY,right,floorY));
+    A.segs.push(seg(left,floorY,left,150));
+    A.segs.push(seg(right,floorY,right,150));
+    A.segs.push(seg(left,150,right,150));
+    A.hazards.push({type:'saw',x:640,y:floorY-46,r:54,ang:0,spin:5});
+    A.hazards.push({type:'saw',x:340,y:floorY-40,r:38,ang:0,spin:-7});
+    A.hazards.push({type:'saw',x:940,y:floorY-40,r:38,ang:0,spin:7});
+    A.spawns=[{x:430,y:200},{x:850,y:200}];
+  }else{ // Rising Lava
+    A.name='Rising Lava'; A.bg='#150704'; A.accent='#3a1a10';
+    // three platforms over a pit
+    A.segs.push(seg(left,floorY,left,150));
+    A.segs.push(seg(right,floorY,right,150));
+    A.segs.push(seg(left,150,right,150));
+    A.segs.push(seg(160,420,420,420));   // left platform
+    A.segs.push(seg(520,330,760,330));   // center platform
+    A.segs.push(seg(860,420,1120,420));  // right platform
+    A.lava={y:680, base:680, top:360, t:0, dir:1};
+    A.spawns=[{x:290,y:360},{x:990,y:360}];
+  }
+  return A;
+}
+
+// ===========================================================
+//  PHYSICS STEP
+// ===========================================================
+const GRAV=1500;
+function physicsStep(v, A, dt, playing){
+  if(!v.alive) return;
+  // gravity
+  v.vy += GRAV*dt;
+  // drive: torque + forward force when a wheel is grounded
+  const torque = v.drive * 62;
+  v.av += torque*dt;
+  v.wheels.forEach(w=>w.spin += v.drive*16*dt);
+  // integrate
+  v.x += v.vx*dt; v.y += v.vy*dt; v.a += v.av*dt;
+  // damping
+  v.vx *= 0.999; v.vy *= 0.999; v.av *= 0.985;
+
+  // collide wheels + chassis corners with ground segments
+  const contacts=[];
+  v.wheels.forEach(w=>{ const [wx,wy]=v.wp(w.lx,w.ly); contacts.push({wx,wy,r:w.r,drive:true}); });
+  // chassis corners as small circles for body collision
+  const cs=v.chassis;
+  [[-cs.hw,cs.cy-cs.hh],[cs.hw,cs.cy-cs.hh],[-cs.hw,cs.cy+cs.hh],[cs.hw,cs.cy+cs.hh]].forEach(c=>{
+    const [wx,wy]=v.wp(c[0],c[1]); contacts.push({wx,wy,r:6,drive:false});
+  });
+
+  for(const ct of contacts){
+    for(const s of A.segs){
+      const hit=closestOnSeg(ct.wx,ct.wy,s);
+      const dx=ct.wx-hit.x, dy=ct.wy-hit.y;
+      let d=Math.hypot(dx,dy);
+      if(d<ct.r && d>1e-4){
+        let nx=dx/d, ny=dy/d;
+        const pen=ct.r-d;
+        // positional correction
+        v.x+=nx*pen*0.5; v.y+=ny*pen*0.5;
+        const rx=ct.wx-v.x, ry=ct.wy-v.y;
+        const [pvx,pvy]=v.pointVel(rx,ry);
+        const vn=pvx*nx+pvy*ny;
+        if(vn<0){
+          const rn=rx*ny-ry*nx;
+          const denom=v.invMass + v.invI*rn*rn;
+          let j=-(1.25)*vn/denom;
+          v.applyImpulse(j*nx,j*ny,rx,ry);
+        }
+        // friction / drive along tangent
+        const tx=-ny, ty=nx;
+        const [pvx2,pvy2]=v.pointVel(rx,ry);
+        let vt=pvx2*tx+pvy2*ty;
+        const rt=rx*ty-ry*tx;
+        const denomT=v.invMass+v.invI*rt*rt;
+        let jt=-vt/denomT * 0.65; // grip
+        v.applyImpulse(jt*tx,jt*ty,rx,ry);
+        if(ct.drive && playing){
+          const push = v.drive*240;
+          v.applyImpulse(tx*push*dt*60*v.mass*0.0,ty*0,rx,ry); // (drive handled by torque->ground grip)
+        }
+      }
+    }
+  }
+}
+
+function closestOnSeg(px,py,s){
+  const dx=s.bx-s.ax, dy=s.by-s.ay;
+  const len2=dx*dx+dy*dy;
+  let t = len2>0 ? ((px-s.ax)*dx+(py-s.ay)*dy)/len2 : 0;
+  t=clamp(t,0,1);
+  return {x:s.ax+dx*t, y:s.ay+dy*t};
+}
+
+// ===========================================================
+//  GAME STATE
+// ===========================================================
+const State={MENU:0,COUNT:1,PLAY:2,ROUND:3,MATCH:4};
+const game={
+  state:State.MENU, menuSel:0, arenaSel:0, mode:0, // 0=2P 1=AI
+  scores:[0,0], round:0, A:null, vehicles:[], count:0,
+  msg:'', msgT:0, shake:0, winner:-1, aiDiff:1,
+  particles:[]
+};
+const TARGET=5;
+
+function startMatch(){
+  game.scores=[0,0]; game.round=0; game.winner=-1;
+  game.A=buildArena(game.arenaSel);
+  game.vehicles=[new Vehicle(0,game.A.spawns[0].x,game.A.spawns[0].y),
+                 new Vehicle(1,game.A.spawns[1].x,game.A.spawns[1].y)];
+  startRound();
+}
+function startRound(){
+  game.round++;
+  const A=game.A;
+  game.vehicles[0].reset(A.spawns[0].x,A.spawns[0].y);
+  game.vehicles[1].reset(A.spawns[1].x,A.spawns[1].y);
+  if(A.lava){A.lava.y=A.lava.base; A.lava.t=0;}
+  A.hazards.forEach(h=>h.ang=0);
+  game.count=3.0; game.state=State.COUNT;
+}
+function score(victimPid){
+  if(game.state!==State.PLAY) return;
+  const scorer = victimPid===0?1:0;
+  game.scores[scorer]++;
+  game.shake=18;
+  burst(game.vehicles[victimPid].headWorld(), game.vehicles[victimPid].color, 34);
+  game.msg='Player '+(scorer+1)+' scores!'; game.msgT=2.0;
+  game.state=State.ROUND;
+  if(game.scores[scorer]>=TARGET){ game.winner=scorer; setTimeout(()=>{game.state=State.MATCH;},1400); }
+  else setTimeout(()=>{ if(game.state===State.ROUND) startRound(); },1800);
+}
+
+// ---------- particles ----------
+function burst(p,color,n){
+  for(let i=0;i<n;i++){const a=Math.random()*6.28,s=80+Math.random()*340;
+    game.particles.push({x:p[0],y:p[1],vx:Math.cos(a)*s,vy:Math.sin(a)*s-80,life:0.6+Math.random()*0.4,c:color});}
+}
+function updateParticles(dt){
+  for(let i=game.particles.length-1;i>=0;i--){const p=game.particles[i];
+    p.vy+=900*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.life-=dt; if(p.life<=0)game.particles.splice(i,1);}
+}
+
+// ===========================================================
+//  AI
+// ===========================================================
+function aiInput(me,enemy){
+  const diff=game.aiDiff;
+  // small mistake chance
+  if(Math.random()< (diff===0?0.04:diff===1?0.012:0.002)){ me._mt=(diff===0?0.7:0.3); me._md=(Math.random()<.5?-1:1);}
+  if(me._mt>0){me._mt-=1/60; return me._md;}
+  const dx=enemy.x-me.x;
+  // if flipped, wiggle to recover
+  let na=((me.a%6.283)+6.283)%6.283;
+  const flipped = na>1.9 && na<4.4;
+  if(flipped) return dx>0?-1:1;
+  // hard: predict
+  let target = enemy.x + (diff===2? enemy.vx*0.25:0);
+  return target>me.x?1:-1;
+}
+
+// ===========================================================
+//  UPDATE
+// ===========================================================
+let last=performance.now();
+function frame(now){
+  let dt=Math.min((now-last)/1000,0.033); last=now;
+  update(dt); render();
+  requestAnimationFrame(frame);
+}
+function update(dt){
+  if(game.shake>0) game.shake=Math.max(0,game.shake-60*dt);
+  if(game.msgT>0) game.msgT-=dt;
+  updateParticles(dt);
+
+  if(game.state===State.COUNT){
+    game.count-=dt;
+    if(game.count<=0){ game.state=State.PLAY; }
+  }
+
+  if([State.PLAY,State.COUNT,State.ROUND].includes(game.state) && game.A){
+    const playing=game.state===State.PLAY;
+    // input
+    if(playing){
+      const p1 = (keys['KeyD']?1:0)-(keys['KeyA']?1:0);
+      game.vehicles[0].drive=p1;
+      if(game.mode===1){ game.vehicles[1].drive=aiInput(game.vehicles[1],game.vehicles[0]); }
+      else { game.vehicles[1].drive=(keys['ArrowRight']?1:0)-(keys['ArrowLeft']?1:0); }
+    } else { game.vehicles.forEach(v=>v.drive=0); }
+
+    // substeps for stability
+    const SUB=6, sdt=dt/SUB;
+    for(let s=0;s<SUB;s++){
+      game.vehicles.forEach(v=>physicsStep(v,game.A,sdt,playing));
+    }
+    // hazards
+    game.A.hazards.forEach(h=>{ h.ang+=h.spin*dt; });
+    if(game.A.lava){const L=game.A.lava; L.t+=dt;
+      // rise then recede in a cycle
+      const phase=(L.t%13)/13;
+      L.y = phase<0.7 ? lerp(L.base,L.top,phase/0.7) : lerp(L.top,L.base,(phase-0.7)/0.3);
+    }
+    if(playing) checkKills();
+  }
+}
+
+function checkKills(){
+  const [v0,v1]=game.vehicles;
+  // head hit: enemy body near my head with enough relative speed
+  killCheck(v0,v1);
+  killCheck(v1,v0);
+  // hazards
+  for(const v of game.vehicles){ if(!v.alive)continue;
+    const [hx,hy]=v.headWorld();
+    for(const h of game.A.hazards){
+      if(h.type==='saw'){ if(Math.hypot(v.x-h.x,v.y-h.y)<h.r+24 || Math.hypot(hx-h.x,hy-h.y)<h.r+14){ die(v); } }
+    }
+    if(game.A.lava){ if(v.y>game.A.lava.y || hy>game.A.lava.y){ die(v); } }
+    // fell off world
+    if(v.y>820){ die(v); }
+  }
+}
+function killCheck(target,attacker){
+  if(!target.alive||!attacker.alive) return;
+  const [hx,hy]=target.headWorld();
+  // attacker collision points
+  const pts=[[attacker.x,attacker.y],
+             attacker.wp(attacker.wheels[0].lx,attacker.wheels[0].ly),
+             attacker.wp(attacker.wheels[1].lx,attacker.wheels[1].ly)];
+  for(const p of pts){
+    const dx=hx-p[0], dy=hy-p[1]; const d=Math.hypot(dx,dy);
+    if(d < target.head.r+18){
+      const rel=Math.hypot(attacker.vx-target.vx,attacker.vy-target.vy);
+      if(rel>140){ die(target); return; }
+    }
+  }
+}
+function die(v){
+  if(!v.alive)return;
+  v.alive=false; game.shake=Math.max(game.shake,14);
+  burst(v.headWorld(),'#ffcc33',26);
+  score(v.pid);
+}
+
+// ===========================================================
+//  MENU NAV
+// ===========================================================
+const menuItems=['2 PLAYERS','VS AI','‹ ARENA ›','START'];
+function onEnter(){
+  if(game.state===State.MENU){
+    if(game.menuSel===0){game.mode=0;}
+    else if(game.menuSel===1){game.mode=1;}
+    else if(game.menuSel===3){ startMatch(); }
+  } else if(game.state===State.MATCH){ game.state=State.MENU; }
+}
+function onEscape(){ if(game.state===State.PLAY||game.state===State.ROUND||game.state===State.COUNT||game.state===State.MATCH){ game.state=State.MENU; } }
+let navLock=0;
+function menuNav(dt){
+  navLock-=dt; if(navLock>0)return;
+  if(keys['ArrowDown']||keys['KeyS']){game.menuSel=(game.menuSel+1)%menuItems.length;navLock=0.18;}
+  if(keys['ArrowUp']||keys['KeyW']){game.menuSel=(game.menuSel-1+menuItems.length)%menuItems.length;navLock=0.18;}
+  if(game.menuSel===2){
+    if(keys['ArrowRight']||keys['KeyD']){game.arenaSel=(game.arenaSel+1)%3;navLock=0.2;}
+    if(keys['ArrowLeft']||keys['KeyA']){game.arenaSel=(game.arenaSel+2)%3;navLock=0.2;}
+  }
+  if(keys['Digit1']){game.mode=0;}
+  if(keys['Digit2']){game.mode=1;}
+}
+
+// ===========================================================
+//  RENDER
+// ===========================================================
+const arenaNames=['Classic Bowl','Central Sawblade','Rising Lava'];
+function render(){
+  ctx.save();
+  // background
+  const bg=game.A?game.A.bg:'#0a0a0f';
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  if(game.state===State.MENU){ drawMenu(); ctx.restore(); return; }
+
+  // camera shake
+  if(game.shake>0){ ctx.translate((Math.random()-.5)*game.shake,(Math.random()-.5)*game.shake); }
+
+  drawArena();
+  game.vehicles.forEach(drawVehicle);
+  drawParticles();
+  drawHUD();
+
+  if(game.state===State.COUNT) drawCountdown();
+  if(game.msgT>0) drawCenter(game.msg, 230, '#fff', 46);
+  if(game.state===State.MATCH) drawMatchEnd();
+
+  ctx.restore();
+}
+
+function drawArena(){
+  const A=game.A;
+  // lava
+  if(A.lava){
+    ctx.fillStyle='#ff4400'; ctx.fillRect(0,A.lava.y,W,H-A.lava.y);
+    ctx.fillStyle='#ffaa22'; ctx.fillRect(0,A.lava.y,W,8);
+  }
+  // ground
+  ctx.lineWidth=10; ctx.strokeStyle=A.accent; ctx.lineCap='round';
+  ctx.beginPath();
+  for(const s of A.segs){ ctx.moveTo(s.ax,s.ay); ctx.lineTo(s.bx,s.by); }
+  ctx.stroke();
+  ctx.lineWidth=3; ctx.strokeStyle='#555';
+  ctx.beginPath();
+  for(const s of A.segs){ ctx.moveTo(s.ax,s.ay); ctx.lineTo(s.bx,s.by); }
+  ctx.stroke();
+  // hazards
+  for(const h of A.hazards){ if(h.type==='saw') drawSaw(h); }
+}
+function drawSaw(h){
+  ctx.save(); ctx.translate(h.x,h.y); ctx.rotate(h.ang);
+  ctx.fillStyle='#cc1818';
+  const teeth=12;
+  ctx.beginPath();
+  for(let i=0;i<teeth;i++){
+    const a=i/teeth*6.283; const a2=(i+0.5)/teeth*6.283;
+    ctx.lineTo(Math.cos(a)*h.r,Math.sin(a)*h.r);
+    ctx.lineTo(Math.cos(a2)*(h.r*0.72),Math.sin(a2)*(h.r*0.72));
+  }
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#888'; ctx.beginPath(); ctx.arc(0,0,h.r*0.34,0,6.283); ctx.fill();
+  ctx.fillStyle='#333'; ctx.beginPath(); ctx.arc(0,0,h.r*0.12,0,6.283); ctx.fill();
+  ctx.restore();
+}
+
+function drawVehicle(v){
+  ctx.save();
+  if(!v.alive){ ctx.globalAlpha=0.25; }
+  ctx.translate(v.x,v.y); ctx.rotate(v.a);
+  // wheels
+  for(const w of v.wheels){
+    ctx.save(); ctx.translate(w.lx,w.ly); ctx.rotate(w.spin);
+    ctx.fillStyle='#111'; ctx.beginPath(); ctx.arc(0,0,w.r,0,6.283); ctx.fill();
+    ctx.fillStyle='#666'; ctx.beginPath(); ctx.arc(0,0,w.r*0.4,0,6.283); ctx.fill();
+    ctx.strokeStyle='#888'; ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(0,-w.r);ctx.lineTo(0,w.r);ctx.moveTo(-w.r,0);ctx.lineTo(w.r,0);ctx.stroke();
+    ctx.restore();
+  }
+  // chassis
+  const c=v.chassis;
+  ctx.fillStyle=v.color;
+  ctx.fillRect(-c.hw,c.cy-c.hh,c.hw*2,c.hh*2);
+  ctx.fillStyle=v.dark;
+  ctx.fillRect(-c.hw,c.cy-c.hh,c.hw*2,5);
+  // head
+  const hd=v.head;
+  ctx.fillStyle=v.dark;
+  ctx.fillRect(hd.lx-hd.r,hd.ly-hd.r,hd.r*2,hd.r*0.9);
+  ctx.fillStyle='#f0d9b8';
+  ctx.beginPath(); ctx.arc(hd.lx,hd.ly+2,hd.r-2,0,6.283); ctx.fill();
+  ctx.restore();
+}
+
+function drawParticles(){
+  for(const p of game.particles){
+    ctx.globalAlpha=clamp(p.life,0,1); ctx.fillStyle=p.c;
+    ctx.fillRect(p.x-3,p.y-3,6,6);
+  }
+  ctx.globalAlpha=1;
+}
+
+function drawHUD(){
+  ctx.font='bold 54px Trebuchet MS';
+  ctx.textAlign='center';
+  ctx.fillStyle='#3aa0ff'; ctx.fillText(game.scores[0], W/2-120, 64);
+  ctx.fillStyle='#ff5236'; ctx.fillText(game.scores[1], W/2+120, 64);
+  ctx.fillStyle='#888'; ctx.font='18px Trebuchet MS';
+  ctx.fillText('ROUND '+game.round, W/2, 40);
+  ctx.font='13px Trebuchet MS'; ctx.fillStyle='#555';
+  ctx.fillText('First to '+TARGET, W/2, 84);
+}
+
+function drawCountdown(){
+  const n=Math.ceil(game.count);
+  drawCenter(n>0?String(n):'GO!', H/2, n>0?'#fff':'#3dff7a', 120);
+}
+function drawCenter(t,y,color,size){
+  ctx.font='bold '+size+'px Trebuchet MS'; ctx.textAlign='center';
+  ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillText(t,W/2+3,y+3);
+  ctx.fillStyle=color; ctx.fillText(t,W/2,y);
+}
+
+function drawMatchEnd(){
+  ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,0,W,H);
+  const col=game.winner===0?'#3aa0ff':'#ff5236';
+  drawCenter('PLAYER '+(game.winner+1)+' WINS!', H/2-30, col, 64);
+  drawCenter(game.scores[0]+'  —  '+game.scores[1], H/2+40, '#fff', 40);
+  drawCenter('Press ENTER for menu', H/2+110, '#999', 24);
+}
+
+function drawMenu(){
+  menuNav(1/60);
+  // title
+  ctx.textAlign='center';
+  ctx.font='bold 92px Trebuchet MS';
+  ctx.fillStyle='#1a1d26'; ctx.fillText('ARENA CRASH',W/2+4,164);
+  ctx.fillStyle='#f0eee8'; ctx.fillText('ARENA CRASH',W/2,160);
+  ctx.font='22px Trebuchet MS'; ctx.fillStyle='#c9a227';
+  ctx.fillText('physics vehicle combat',W/2,200);
+
+  const items=['2 PLAYERS','VS AI','ARENA','START MATCH'];
+  for(let i=0;i<items.length;i++){
+    const y=300+i*70; const sel=i===game.menuSel;
+    ctx.font='bold 34px Trebuchet MS';
+    let txt=items[i];
+    if(i===2) txt='‹  '+arenaNames[game.arenaSel]+'  ›';
+    if(i===0) txt='2 PLAYERS'+(game.mode===0?'   ✓':'');
+    if(i===1) txt='VS AI'+(game.mode===1?'   ✓':'');
+    if(sel){ ctx.fillStyle='#c9a227'; ctx.fillText('▶  '+txt+'  ◀',W/2,y); }
+    else { ctx.fillStyle='#777'; ctx.fillText(txt,W/2,y); }
+  }
+  ctx.font='16px Trebuchet MS'; ctx.fillStyle='#555';
+  ctx.fillText('↑/↓ navigate · ←/→ change arena · ENTER select',W/2,640);
+  ctx.fillText('P1: A / D     P2: ← / →     F: Fullscreen',W/2,672);
+}
+
+// ---------- responsive scale ----------
+function resize(){
+  const s=Math.min(innerWidth/W, innerHeight/H);
+  cv.style.width=(W*s)+'px'; cv.style.height=(H*s)+'px';
+}
+addEventListener('resize',resize); resize();
+
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
