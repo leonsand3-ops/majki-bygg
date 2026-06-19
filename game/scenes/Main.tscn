@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[node name="Main" type="Node"]
+script = ExtResource("res://scripts/game/GameManager.gd")
+
+[node name="InitLoader" type="Node" parent="."]

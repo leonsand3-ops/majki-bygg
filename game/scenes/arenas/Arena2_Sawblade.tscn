@@ -1,0 +1,157 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/arenas/Arena.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/arenas/Sawblade.gd" id="2"]
+
+[sub_resource type="RectangleShape2D" id="floor_shape"]
+size = Vector2(1400, 40)
+
+[sub_resource type="RectangleShape2D" id="wall_shape"]
+size = Vector2(40, 600)
+
+[sub_resource type="RectangleShape2D" id="platform_shape"]
+size = Vector2(300, 30)
+
+[sub_resource type="CircleShape2D" id="blade_shape"]
+radius = 50.0
+
+[sub_resource type="CircleShape2D" id="small_blade_shape"]
+radius = 30.0
+
+[node name="Arena2_Sawblade" type="Node2D"]
+script = ExtResource("1")
+arena_name = "Central Sawblade"
+spawn_positions = [Vector2(-340, -80), Vector2(340, -80)]
+spawn_rotations = [0.0, 180.0]
+
+[node name="Background" type="ColorRect" parent="."]
+position = Vector2(-960, -540)
+size = Vector2(1920, 1080)
+color = Color(0.07, 0.05, 0.08, 1)
+
+[node name="Floor" type="StaticBody2D" parent="."]
+position = Vector2(0, 240)
+collision_layer = 1
+
+[node name="FloorShape" type="CollisionShape2D" parent="Floor"]
+shape = SubResource("floor_shape")
+
+[node name="FloorSprite" type="ColorRect" parent="Floor"]
+position = Vector2(-700, -20)
+size = Vector2(1400, 40)
+color = Color(0.18, 0.16, 0.22, 1)
+
+[node name="LeftWall" type="StaticBody2D" parent="."]
+position = Vector2(-720, -60)
+collision_layer = 1
+
+[node name="LWallShape" type="CollisionShape2D" parent="LeftWall"]
+shape = SubResource("wall_shape")
+
+[node name="LWallSprite" type="ColorRect" parent="LeftWall"]
+position = Vector2(-20, -300)
+size = Vector2(40, 600)
+color = Color(0.18, 0.16, 0.22, 1)
+
+[node name="RightWall" type="StaticBody2D" parent="."]
+position = Vector2(720, -60)
+collision_layer = 1
+
+[node name="RWallShape" type="CollisionShape2D" parent="RightWall"]
+shape = SubResource("wall_shape")
+
+[node name="RWallSprite" type="ColorRect" parent="RightWall"]
+position = Vector2(-20, -300)
+size = Vector2(40, 600)
+color = Color(0.18, 0.16, 0.22, 1)
+
+[node name="LeftPlatform" type="StaticBody2D" parent="."]
+position = Vector2(-420, 60)
+collision_layer = 1
+
+[node name="LPlatformShape" type="CollisionShape2D" parent="LeftPlatform"]
+shape = SubResource("platform_shape")
+
+[node name="LPlatformSprite" type="ColorRect" parent="LeftPlatform"]
+position = Vector2(-150, -15)
+size = Vector2(300, 30)
+color = Color(0.22, 0.20, 0.28, 1)
+
+[node name="RightPlatform" type="StaticBody2D" parent="."]
+position = Vector2(420, 60)
+collision_layer = 1
+
+[node name="RPlatformShape" type="CollisionShape2D" parent="RightPlatform"]
+shape = SubResource("platform_shape")
+
+[node name="RPlatformSprite" type="ColorRect" parent="RightPlatform"]
+position = Vector2(-150, -15)
+size = Vector2(300, 30)
+color = Color(0.22, 0.20, 0.28, 1)
+
+[node name="CenterSawblade" type="Node2D" parent="."]
+position = Vector2(0, 180)
+script = ExtResource("2")
+spin_speed = 240.0
+starts_active = true
+cycle_on = 999.0
+cycle_off = 0.0
+
+[node name="Sprite2D" type="ColorRect" parent="CenterSawblade"]
+position = Vector2(-50, -50)
+size = Vector2(100, 100)
+color = Color(0.7, 0.1, 0.1, 1)
+
+[node name="TeethDecor" type="ColorRect" parent="CenterSawblade"]
+position = Vector2(-50, -50)
+size = Vector2(100, 100)
+color = Color(0.9, 0.15, 0.15, 0.5)
+rotation = 0.785
+
+[node name="HitArea" type="Area2D" parent="CenterSawblade"]
+collision_layer = 8
+collision_mask = 2
+
+[node name="BladeShape" type="CollisionShape2D" parent="CenterSawblade/HitArea"]
+shape = SubResource("blade_shape")
+
+[node name="LeftSmallBlade" type="Node2D" parent="."]
+position = Vector2(-180, 220)
+script = ExtResource("2")
+spin_speed = -300.0
+cycle_on = 3.0
+cycle_off = 2.0
+starts_active = true
+
+[node name="Sprite2D" type="ColorRect" parent="LeftSmallBlade"]
+position = Vector2(-30, -30)
+size = Vector2(60, 60)
+color = Color(0.6, 0.08, 0.08, 1)
+
+[node name="HitArea" type="Area2D" parent="LeftSmallBlade"]
+collision_layer = 8
+collision_mask = 2
+
+[node name="BladeShape" type="CollisionShape2D" parent="LeftSmallBlade/HitArea"]
+shape = SubResource("small_blade_shape")
+
+[node name="RightSmallBlade" type="Node2D" parent="."]
+position = Vector2(180, 220)
+script = ExtResource("2")
+spin_speed = 300.0
+cycle_on = 3.0
+cycle_off = 2.0
+activation_delay = 1.5
+starts_active = true
+
+[node name="Sprite2D" type="ColorRect" parent="RightSmallBlade"]
+position = Vector2(-30, -30)
+size = Vector2(60, 60)
+color = Color(0.6, 0.08, 0.08, 1)
+
+[node name="HitArea" type="Area2D" parent="RightSmallBlade"]
+collision_layer = 8
+collision_mask = 2
+
+[node name="BladeShape" type="CollisionShape2D" parent="RightSmallBlade/HitArea"]
+shape = SubResource("small_blade_shape")

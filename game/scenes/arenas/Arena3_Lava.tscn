@@ -1,0 +1,120 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/arenas/Arena.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/arenas/LavaPool.gd" id="2"]
+
+[sub_resource type="RectangleShape2D" id="floor_shape"]
+size = Vector2(1400, 40)
+
+[sub_resource type="RectangleShape2D" id="wall_shape"]
+size = Vector2(40, 700)
+
+[sub_resource type="RectangleShape2D" id="platform_shape"]
+size = Vector2(280, 30)
+
+[sub_resource type="RectangleShape2D" id="lava_body_shape"]
+size = Vector2(1400, 200)
+
+[node name="Arena3_Lava" type="Node2D"]
+script = ExtResource("1")
+arena_name = "Rising Lava"
+spawn_positions = [Vector2(-300, -200), Vector2(300, -200)]
+spawn_rotations = [0.0, 180.0]
+
+[node name="Background" type="ColorRect" parent="."]
+position = Vector2(-960, -540)
+size = Vector2(1920, 1080)
+color = Color(0.1, 0.04, 0.02, 1)
+
+[node name="LavaGlow" type="ColorRect" parent="."]
+position = Vector2(-960, 200)
+size = Vector2(1920, 400)
+color = Color(1.0, 0.3, 0.0, 0.15)
+
+[node name="LeftWall" type="StaticBody2D" parent="."]
+position = Vector2(-720, -100)
+collision_layer = 1
+
+[node name="LWallShape" type="CollisionShape2D" parent="LeftWall"]
+shape = SubResource("wall_shape")
+
+[node name="LWallSprite" type="ColorRect" parent="LeftWall"]
+position = Vector2(-20, -350)
+size = Vector2(40, 700)
+color = Color(0.22, 0.12, 0.08, 1)
+
+[node name="RightWall" type="StaticBody2D" parent="."]
+position = Vector2(720, -100)
+collision_layer = 1
+
+[node name="RWallShape" type="CollisionShape2D" parent="RightWall"]
+shape = SubResource("wall_shape")
+
+[node name="RWallSprite" type="ColorRect" parent="RightWall"]
+position = Vector2(-20, -350)
+size = Vector2(40, 700)
+color = Color(0.22, 0.12, 0.08, 1)
+
+[node name="LeftPlatform" type="StaticBody2D" parent="."]
+position = Vector2(-420, -100)
+collision_layer = 1
+
+[node name="LPlatShape" type="CollisionShape2D" parent="LeftPlatform"]
+shape = SubResource("platform_shape")
+
+[node name="LPlatSprite" type="ColorRect" parent="LeftPlatform"]
+position = Vector2(-140, -15)
+size = Vector2(280, 30)
+color = Color(0.30, 0.18, 0.10, 1)
+
+[node name="CenterPlatform" type="StaticBody2D" parent="."]
+position = Vector2(0, -160)
+collision_layer = 1
+
+[node name="CPlatShape" type="CollisionShape2D" parent="CenterPlatform"]
+shape = SubResource("platform_shape")
+
+[node name="CPlatSprite" type="ColorRect" parent="CenterPlatform"]
+position = Vector2(-140, -15)
+size = Vector2(280, 30)
+color = Color(0.30, 0.18, 0.10, 1)
+
+[node name="RightPlatform" type="StaticBody2D" parent="."]
+position = Vector2(420, -100)
+collision_layer = 1
+
+[node name="RPlatShape" type="CollisionShape2D" parent="RightPlatform"]
+shape = SubResource("platform_shape")
+
+[node name="RPlatSprite" type="ColorRect" parent="RightPlatform"]
+position = Vector2(-140, -15)
+size = Vector2(280, 30)
+color = Color(0.30, 0.18, 0.10, 1)
+
+[node name="LavaPool" type="Node2D" parent="."]
+position = Vector2(0, 600)
+script = ExtResource("2")
+rise_speed = 25.0
+rise_target = -100.0
+cycle_on = 8.0
+cycle_off = 5.0
+starts_active = true
+
+[node name="LavaBody" type="Node2D" parent="LavaPool"]
+
+[node name="LavaSprite" type="ColorRect" parent="LavaPool"]
+position = Vector2(-700, -100)
+size = Vector2(1400, 200)
+color = Color(1.0, 0.35, 0.0, 1)
+
+[node name="LavaSurface" type="ColorRect" parent="LavaPool"]
+position = Vector2(-700, -105)
+size = Vector2(1400, 10)
+color = Color(1.0, 0.7, 0.1, 1)
+
+[node name="HitArea" type="Area2D" parent="LavaPool"]
+collision_layer = 8
+collision_mask = 2
+
+[node name="LavaShape" type="CollisionShape2D" parent="LavaPool/HitArea"]
+shape = SubResource("lava_body_shape")

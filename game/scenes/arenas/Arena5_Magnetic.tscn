@@ -1,0 +1,128 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/arenas/Arena.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/arenas/MagneticArena.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/arenas/MovingPlatform.gd" id="3"]
+
+[sub_resource type="RectangleShape2D" id="floor_shape"]
+size = Vector2(1400, 40)
+
+[sub_resource type="RectangleShape2D" id="wall_shape"]
+size = Vector2(40, 700)
+
+[sub_resource type="RectangleShape2D" id="platform_shape"]
+size = Vector2(260, 25)
+
+[sub_resource type="RectangleShape2D" id="center_platform_shape"]
+size = Vector2(160, 25)
+
+[node name="Arena5_Magnetic" type="Node2D"]
+script = ExtResource("1")
+arena_name = "Magnetic Arena"
+spawn_positions = [Vector2(-320, -80), Vector2(320, -80)]
+spawn_rotations = [0.0, 180.0]
+
+[node name="MagneticController" type="Node" parent="."]
+script = ExtResource("2")
+
+[node name="Background" type="ColorRect" parent="."]
+position = Vector2(-960, -540)
+size = Vector2(1920, 1080)
+color = Color(0.04, 0.08, 0.12, 1)
+
+[node name="MagneticField" type="ColorRect" parent="."]
+position = Vector2(-960, -540)
+size = Vector2(1920, 1080)
+color = Color(0.0, 0.4, 0.8, 0.04)
+
+[node name="Floor" type="StaticBody2D" parent="."]
+position = Vector2(0, 240)
+collision_layer = 1
+
+[node name="FloorShape" type="CollisionShape2D" parent="Floor"]
+shape = SubResource("floor_shape")
+
+[node name="FloorSprite" type="ColorRect" parent="Floor"]
+position = Vector2(-700, -20)
+size = Vector2(1400, 40)
+color = Color(0.08, 0.16, 0.26, 1)
+
+[node name="LeftWall" type="StaticBody2D" parent="."]
+position = Vector2(-720, -80)
+collision_layer = 1
+
+[node name="LWallShape" type="CollisionShape2D" parent="LeftWall"]
+shape = SubResource("wall_shape")
+
+[node name="LWallSprite" type="ColorRect" parent="LeftWall"]
+position = Vector2(-20, -350)
+size = Vector2(40, 700)
+color = Color(0.08, 0.16, 0.26, 1)
+
+[node name="RightWall" type="StaticBody2D" parent="."]
+position = Vector2(720, -80)
+collision_layer = 1
+
+[node name="RWallShape" type="CollisionShape2D" parent="RightWall"]
+shape = SubResource("wall_shape")
+
+[node name="RWallSprite" type="ColorRect" parent="RightWall"]
+position = Vector2(-20, -350)
+size = Vector2(40, 700)
+color = Color(0.08, 0.16, 0.26, 1)
+
+[node name="MovingPlatformLeft" type="AnimatableBody2D" parent="."]
+position = Vector2(-300, 0)
+collision_layer = 1
+script = ExtResource("3")
+point_a = Vector2(0, -100)
+point_b = Vector2(0, 100)
+speed = 80.0
+wait_time = 1.0
+
+[node name="MPLShape" type="CollisionShape2D" parent="MovingPlatformLeft"]
+shape = SubResource("platform_shape")
+
+[node name="MPLSprite" type="ColorRect" parent="MovingPlatformLeft"]
+position = Vector2(-130, -12)
+size = Vector2(260, 25)
+color = Color(0.1, 0.35, 0.6, 1)
+
+[node name="MovingPlatformRight" type="AnimatableBody2D" parent="."]
+position = Vector2(300, 0)
+collision_layer = 1
+script = ExtResource("3")
+point_a = Vector2(0, 100)
+point_b = Vector2(0, -100)
+speed = 80.0
+wait_time = 1.0
+
+[node name="MPRShape" type="CollisionShape2D" parent="MovingPlatformRight"]
+shape = SubResource("platform_shape")
+
+[node name="MPRSprite" type="ColorRect" parent="MovingPlatformRight"]
+position = Vector2(-130, -12)
+size = Vector2(260, 25)
+color = Color(0.1, 0.35, 0.6, 1)
+
+[node name="CenterPlatform" type="StaticBody2D" parent="."]
+position = Vector2(0, 120)
+collision_layer = 1
+
+[node name="CPShape" type="CollisionShape2D" parent="CenterPlatform"]
+shape = SubResource("center_platform_shape")
+
+[node name="CPSprite" type="ColorRect" parent="CenterPlatform"]
+position = Vector2(-80, -12)
+size = Vector2(160, 25)
+color = Color(0.12, 0.4, 0.7, 1)
+
+[node name="MagneticPoleLeft" type="ColorRect" parent="."]
+position = Vector2(-660, -350)
+size = Vector2(20, 700)
+color = Color(0.0, 0.6, 1.0, 0.8)
+
+[node name="MagneticPoleRight" type="ColorRect" parent="."]
+position = Vector2(640, -350)
+size = Vector2(20, 700)
+color = Color(1.0, 0.4, 0.0, 0.8)

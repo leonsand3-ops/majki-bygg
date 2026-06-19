@@ -1,0 +1,31 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/ExplosionEffect.gd" id="1"]
+
+[sub_resource type="ParticleProcessMaterial" id="explosion_material"]
+emission_shape = 1
+emission_sphere_radius = 4.0
+direction = Vector3(0, 0, 0)
+spread = 180.0
+gravity = Vector3(0, 60, 0)
+initial_velocity_min = 60.0
+initial_velocity_max = 180.0
+scale_min = 4.0
+scale_max = 10.0
+color = Color(1.0, 0.5, 0.0, 1.0)
+
+[node name="Explosion" type="Node2D"]
+script = ExtResource("1")
+visible = false
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="."]
+amount = 24
+lifetime = 0.7
+one_shot = true
+explosiveness = 1.0
+process_material = SubResource("explosion_material")
+
+[node name="Flash" type="ColorRect" parent="."]
+position = Vector2(-40, -40)
+size = Vector2(80, 80)
+color = Color(1.0, 0.9, 0.6, 0.8)

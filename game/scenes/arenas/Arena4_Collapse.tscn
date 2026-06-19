@@ -1,0 +1,191 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/arenas/Arena.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/arenas/Arena4Controller.gd" id="2"]
+
+[sub_resource type="RectangleShape2D" id="wall_shape"]
+size = Vector2(40, 700)
+
+[sub_resource type="RectangleShape2D" id="tile_shape"]
+size = Vector2(140, 30)
+
+[sub_resource type="RectangleShape2D" id="kill_floor_shape"]
+size = Vector2(1400, 100)
+
+[node name="Arena4_Collapse" type="Node2D"]
+script = ExtResource("1")
+arena_name = "Collapsing Floor"
+spawn_positions = [Vector2(-280, -100), Vector2(280, -100)]
+spawn_rotations = [0.0, 180.0]
+
+[node name="CollapseController" type="Node" parent="."]
+script = ExtResource("2")
+
+[node name="Background" type="ColorRect" parent="."]
+position = Vector2(-960, -540)
+size = Vector2(1920, 1080)
+color = Color(0.05, 0.06, 0.09, 1)
+
+[node name="LeftWall" type="StaticBody2D" parent="."]
+position = Vector2(-720, -100)
+collision_layer = 1
+
+[node name="LWallShape" type="CollisionShape2D" parent="LeftWall"]
+shape = SubResource("wall_shape")
+
+[node name="LWallSprite" type="ColorRect" parent="LeftWall"]
+position = Vector2(-20, -350)
+size = Vector2(40, 700)
+color = Color(0.20, 0.22, 0.28, 1)
+
+[node name="RightWall" type="StaticBody2D" parent="."]
+position = Vector2(720, -100)
+collision_layer = 1
+
+[node name="RWallShape" type="CollisionShape2D" parent="RightWall"]
+shape = SubResource("wall_shape")
+
+[node name="RWallSprite" type="ColorRect" parent="RightWall"]
+position = Vector2(-20, -350)
+size = Vector2(40, 700)
+color = Color(0.20, 0.22, 0.28, 1)
+
+[node name="FloorTiles" type="Node2D" parent="."]
+
+[node name="Tile0" type="StaticBody2D" parent="FloorTiles"]
+position = Vector2(-630, 160)
+collision_layer = 1
+name = "Tile0"
+
+[node name="TileShape" type="CollisionShape2D" parent="FloorTiles/Tile0"]
+shape = SubResource("tile_shape")
+
+[node name="TileSprite" type="ColorRect" parent="FloorTiles/Tile0"]
+position = Vector2(-70, -15)
+size = Vector2(140, 30)
+color = Color(0.28, 0.30, 0.38, 1)
+
+[node name="Tile1" type="StaticBody2D" parent="FloorTiles"]
+position = Vector2(-490, 160)
+collision_layer = 1
+name = "Tile1"
+
+[node name="TileShape" type="CollisionShape2D" parent="FloorTiles/Tile1"]
+shape = SubResource("tile_shape")
+
+[node name="TileSprite" type="ColorRect" parent="FloorTiles/Tile1"]
+position = Vector2(-70, -15)
+size = Vector2(140, 30)
+color = Color(0.28, 0.30, 0.38, 1)
+
+[node name="Tile2" type="StaticBody2D" parent="FloorTiles"]
+position = Vector2(-350, 160)
+collision_layer = 1
+name = "Tile2"
+
+[node name="TileShape" type="CollisionShape2D" parent="FloorTiles/Tile2"]
+shape = SubResource("tile_shape")
+
+[node name="TileSprite" type="ColorRect" parent="FloorTiles/Tile2"]
+position = Vector2(-70, -15)
+size = Vector2(140, 30)
+color = Color(0.28, 0.30, 0.38, 1)
+
+[node name="Tile3" type="StaticBody2D" parent="FloorTiles"]
+position = Vector2(-210, 160)
+collision_layer = 1
+name = "Tile3"
+
+[node name="TileShape" type="CollisionShape2D" parent="FloorTiles/Tile3"]
+shape = SubResource("tile_shape")
+
+[node name="TileSprite" type="ColorRect" parent="FloorTiles/Tile3"]
+position = Vector2(-70, -15)
+size = Vector2(140, 30)
+color = Color(0.28, 0.30, 0.38, 1)
+
+[node name="Tile4" type="StaticBody2D" parent="FloorTiles"]
+position = Vector2(-70, 160)
+collision_layer = 1
+name = "Tile4"
+
+[node name="TileShape" type="CollisionShape2D" parent="FloorTiles/Tile4"]
+shape = SubResource("tile_shape")
+
+[node name="TileSprite" type="ColorRect" parent="FloorTiles/Tile4"]
+position = Vector2(-70, -15)
+size = Vector2(140, 30)
+color = Color(0.28, 0.30, 0.38, 1)
+
+[node name="Tile5" type="StaticBody2D" parent="FloorTiles"]
+position = Vector2(70, 160)
+collision_layer = 1
+name = "Tile5"
+
+[node name="TileShape" type="CollisionShape2D" parent="FloorTiles/Tile5"]
+shape = SubResource("tile_shape")
+
+[node name="TileSprite" type="ColorRect" parent="FloorTiles/Tile5"]
+position = Vector2(-70, -15)
+size = Vector2(140, 30)
+color = Color(0.28, 0.30, 0.38, 1)
+
+[node name="Tile6" type="StaticBody2D" parent="FloorTiles"]
+position = Vector2(210, 160)
+collision_layer = 1
+name = "Tile6"
+
+[node name="TileShape" type="CollisionShape2D" parent="FloorTiles/Tile6"]
+shape = SubResource("tile_shape")
+
+[node name="TileSprite" type="ColorRect" parent="FloorTiles/Tile6"]
+position = Vector2(-70, -15)
+size = Vector2(140, 30)
+color = Color(0.28, 0.30, 0.38, 1)
+
+[node name="Tile7" type="StaticBody2D" parent="FloorTiles"]
+position = Vector2(350, 160)
+collision_layer = 1
+name = "Tile7"
+
+[node name="TileShape" type="CollisionShape2D" parent="FloorTiles/Tile7"]
+shape = SubResource("tile_shape")
+
+[node name="TileSprite" type="ColorRect" parent="FloorTiles/Tile7"]
+position = Vector2(-70, -15)
+size = Vector2(140, 30)
+color = Color(0.28, 0.30, 0.38, 1)
+
+[node name="Tile8" type="StaticBody2D" parent="FloorTiles"]
+position = Vector2(490, 160)
+collision_layer = 1
+name = "Tile8"
+
+[node name="TileShape" type="CollisionShape2D" parent="FloorTiles/Tile8"]
+shape = SubResource("tile_shape")
+
+[node name="TileSprite" type="ColorRect" parent="FloorTiles/Tile8"]
+position = Vector2(-70, -15)
+size = Vector2(140, 30)
+color = Color(0.28, 0.30, 0.38, 1)
+
+[node name="Tile9" type="StaticBody2D" parent="FloorTiles"]
+position = Vector2(630, 160)
+collision_layer = 1
+name = "Tile9"
+
+[node name="TileShape" type="CollisionShape2D" parent="FloorTiles/Tile9"]
+shape = SubResource("tile_shape")
+
+[node name="TileSprite" type="ColorRect" parent="FloorTiles/Tile9"]
+position = Vector2(-70, -15)
+size = Vector2(140, 30)
+color = Color(0.28, 0.30, 0.38, 1)
+
+[node name="KillFloor" type="Area2D" parent="."]
+position = Vector2(0, 700)
+collision_layer = 8
+collision_mask = 2
+
+[node name="KFShape" type="CollisionShape2D" parent="KillFloor"]
+shape = SubResource("kill_floor_shape")
