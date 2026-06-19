@@ -146,28 +146,30 @@ function buildArena(idx){
 //  PHYSICS STEP
 // ===========================================================
 const GRAV=1500;
+const MAX_DRIVE_SPEED = 900;   // px/s
+const ACCEL = 7500;            // px/s^2
+
 function physicsStep(v, A, dt, playing){
   if(!v.alive) return;
   // gravity
   v.vy += GRAV*dt;
-  // gentle body torque for air control only — real propulsion happens at the
-  // grounded wheels (see the contact loop below)
-  v.av += v.drive * 7 * dt;
-  v.wheels.forEach(w=>w.spin += v.drive*22*dt);
+  // spin wheels visually
+  v.wheels.forEach(w=>w.spin += v.drive*30*dt);
   // integrate
   v.x += v.vx*dt; v.y += v.vy*dt; v.a += v.av*dt;
-  // damping
-  v.vx *= 0.999; v.vy *= 0.999; v.av *= 0.985;
+  // strong angular damping — prevents tipping on flat ground
+  v.vx *= 0.999; v.vy *= 0.999; v.av *= 0.92;
 
   // collide wheels + chassis corners with ground segments
   const contacts=[];
-  v.wheels.forEach(w=>{ const [wx,wy]=v.wp(w.lx,w.ly); contacts.push({wx,wy,r:w.r,drive:true}); });
-  // chassis corners as small circles for body collision
+  v.wheels.forEach(w=>{ const [wx,wy]=v.wp(w.lx,w.ly); contacts.push({wx,wy,r:w.r,drive:true,isWheel:true}); });
+  // chassis corners
   const cs=v.chassis;
   [[-cs.hw,cs.cy-cs.hh],[cs.hw,cs.cy-cs.hh],[-cs.hw,cs.cy+cs.hh],[cs.hw,cs.cy+cs.hh]].forEach(c=>{
-    const [wx,wy]=v.wp(c[0],c[1]); contacts.push({wx,wy,r:6,drive:false});
+    const [wx,wy]=v.wp(c[0],c[1]); contacts.push({wx,wy,r:6,drive:false,isWheel:false});
   });
 
+  let groundedCount=0;
   for(const ct of contacts){
     for(const s of A.segs){
       const hit=closestOnSeg(ct.wx,ct.wy,s);
@@ -193,23 +195,36 @@ function physicsStep(v, A, dt, playing){
         let vt=pvx2*tx+pvy2*ty;
         const rt=rx*ty-ry*tx;
         const denomT=v.invMass+v.invI*rt*rt;
-        // A powered wheel rolls freely along the drive direction (low friction so
-        // the thrust isn't cancelled); everything else grips firmly so it can't slide.
         const driving = ct.drive && playing && v.drive!==0;
-        const grip = driving ? 0.10 : 0.7;
+        const grip = driving ? 0.12 : 0.7;
         let jt=-vt/denomT * grip;
         v.applyImpulse(jt*tx,jt*ty,rx,ry);
-        // drive: push the vehicle forward along the ground at grounded wheels
         if(driving){
-          const MAX_DRIVE_SPEED = 520;               // px/s cap on tangential speed
           if(v.drive*vt < MAX_DRIVE_SPEED){
-            const ACCEL = 4200;                       // px/s^2 of drive thrust
-            const j = v.drive * ACCEL * v.mass * dt;  // impulse this substep
+            const j = v.drive * ACCEL * v.mass * dt;
             v.applyImpulse(tx*j, ty*j, rx, ry);
+          }
+        }
+        // wall-sticky force: keep car pressed against walls at speed
+        if(ct.isWheel){
+          groundedCount++;
+          const isWall = Math.abs(nx) > 0.6;   // near-vertical surface normal
+          if(isWall){
+            const speed=Math.hypot(v.vx,v.vy);
+            const WALL_GRIP=0.18;
+            v.applyImpulse(-nx*WALL_GRIP*speed,-ny*WALL_GRIP*speed,rx,ry);
           }
         }
       }
     }
+  }
+
+  // active self-righting torque when grounded — strongly resists rotation
+  if(groundedCount > 0){
+    // normalise angle to [-π, π]
+    let na = ((v.a % (2*Math.PI)) + 2*Math.PI) % (2*Math.PI);
+    if(na > Math.PI) na -= 2*Math.PI;
+    v.av -= na * 28 * dt;   // spring back toward upright
   }
 }
 
